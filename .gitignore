@@ -1,0 +1,35 @@
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Jupyter and editor files
+.ipynb_checkpoints/
+.vscode/
+
+# Original NASA dataset
+CMaps/
+CMAPSSData/
+archive*/
+*.zip
+
+# Generated datasets and sequence windows
+data/processed/
+data/sequences/
+data/train_FD001_RUL.csv
+
+# Temporary and system files
+.DS_Store
+Thumbs.db
+*.log
+
+# Keep only the selected project plots and result summaries if desired.
