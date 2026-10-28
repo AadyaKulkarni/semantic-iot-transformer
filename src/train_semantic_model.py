@@ -25,10 +25,10 @@ RESULTS_DIR.mkdir(exist_ok=True)
 
 DEVICE = "cpu"
 LATENT_DIM = 8
-EPOCHS = 20
-PATIENCE = 4
+EPOCHS = 40
+PATIENCE = 7
 BATCH_SIZE = 128
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0003
 TARGET_SCALE = 125.0
 SNR_LEVELS = [0, 5, 10, 20]
 
@@ -111,6 +111,14 @@ def main():
     )
     criterion = nn.MSELoss()
 
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer,
+    mode="min",
+    factor=0.5,
+    patience=2,
+    min_lr=1e-6
+)
+
     best_loss = float("inf")
     best_transmitter = None
     best_receiver = None
@@ -152,6 +160,7 @@ def main():
             val_prediction = receiver(z_val).cpu().numpy() * TARGET_SCALE
 
         val_mse = mean_squared_error(y_val, val_prediction)
+        scheduler.step(val_mse)
         history.append({
             "epoch": epoch,
             "train_mse_scaled": train_loss,
@@ -183,10 +192,10 @@ def main():
         "receiver": receiver.state_dict(),
         "latent_dim": LATENT_DIM,
         "target_scale": TARGET_SCALE
-    }, MODEL_DIR / "semantic_model.pt")
+    }, MODEL_DIR / "semantic_model_v2.pt")
 
     pd.DataFrame(history).to_csv(
-        RESULTS_DIR / "semantic_training_history.csv", index=False
+       RESULTS_DIR / "semantic_training_history_v2.csv", index=False
     )
 
     # Final evaluation with consistent validation sequences.
@@ -230,12 +239,12 @@ def main():
             )
 
     pd.DataFrame(rows).to_csv(
-        RESULTS_DIR / "semantic_evaluation.csv", index=False
+        RESULTS_DIR / "semantic_evaluation_v2.csv", index=False
     )
 
-    print("\nSaved model:", MODEL_DIR / "semantic_model.pt")
-    print("Saved training history:", RESULTS_DIR / "semantic_training_history.csv")
-    print("Saved evaluation:", RESULTS_DIR / "semantic_evaluation.csv")
+    print("\nSaved model:", MODEL_DIR / "semantic_model_v2.pt")
+    print("Saved training history:", RESULTS_DIR / "semantic_training_history_v2.csv")
+    print("Saved evaluation:", RESULTS_DIR / "semantic_evaluation_v2.csv")
 
 
 if __name__ == "__main__":
